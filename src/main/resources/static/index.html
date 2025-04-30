@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Transaction Page</title>
+    </head>
+    <body>
+        <h2>Create Transaction</h2>
+        <div id="create-container">
+            <div class="input-row">
+                <span class="input-label">Account ID</span>
+                <input type="text" id="accountId" placeholder="Account ID">
+            </div>
+            <div class="input-row">
+                <span class="input-label">User ID</span>
+                <input type="text" id="userId" placeholder="User ID">
+            </div>
+            <div class="input-row">
+                <span class="input-label">Amount</span>
+                <input type="number" id="amount" placeholder="Amount">
+            </div>
+            <div class="input-row">
+                <span class="input-label">Type</span>
+                <input type="text" id="type" placeholder="Type">
+            </div>
+            <div class="input-row">
+                <span class="input-label">Status</span>
+                <input type="text" id="status" placeholder="Status">
+            </div>
+            <div class="input-row">
+                <button onclick="createTransaction()">Create Transaction</button>
+            </div>
+        </div>
+        
+        <h2>Transactions List</h2>
+        <!-- <button onclick="listAllTransactions()">List All Transactions</button> -->
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Account ID</th>
+                    <th>User ID</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Updated At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="transactions-list">
+            </tbody>
+        </table>
+
+        <div id="update-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeUpdateModal()" style="cursor: pointer;">&times;</span>
+                <h2>Update Transaction</h2>
+                <div class="input-row">
+                    <span class="input-label">ID</span>
+                    <input type="text" id="update-id" placeholder="ID" disabled>
+                </div>
+                <div class="input-row">
+                    <span class="input-label">Account ID</span>
+                    <input type="text" id="update-accountId" placeholder="Account ID">
+                </div>
+                <div class="input-row">
+                    <span class="input-label">User ID</span>
+                    <input type="text" id="update-userId" placeholder="User ID">
+                </div>
+                <div class="input-row">
+                    <span class="input-label">Amount</span>
+                    <input type="number" id="update-amount" placeholder="Amount">
+                </div>
+                <div class="input-row">
+                    <span class="input-label">Type</span>
+                    <input type="text" id="update-type" placeholder="Type">
+                </div>
+                <div class="input-row">
+                    <span class="input-label">Status</span>
+                    <input type="text" id="update-status" placeholder="Status">
+                </div>
+                <div class="input-row">
+                    <button onclick="doUpdate()">Update</button>
+                    <button onclick="closeUpdateModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </body>
+
+</html>
+<script>
+const accountIdInput = document.getElementById('accountId');
+const userIdInput = document.getElementById('userId');
+const amountInput = document.getElementById('amount');
+const typeInput = document.getElementById('type');
+const statusInput = document.getElementById('status');
+const transactionsList = document.getElementById('transactions-list');
+const transactions = [];
+const updateModal = document.getElementById('update-modal');
+const createTransactionRow = (transaction) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+        <td>${transaction.id}</td>
+        <td>${transaction.accountId}</td>
+        <td>${transaction.userId}</td>
+        <td>${transaction.amount}</td>
+        <td>${transaction.type}</td>
+        <td>${transaction.status}</td>
+        <td>${transaction.createdAt}</td>
+        <td>${transaction.updatedAt}</td>
+        <td>
+            <button onclick="deleteTransaction('${transaction.id}')">Delete</button>
+            <button onclick="showUpdateModal('${transaction.id}')">Update</button>
+        </td>
+    `;
+    return row;
+}
+const listAllTransactions = () => {
+    fetch('/api/transactions')
+    .then(response => response.json())
+    .then(data => {
+        transactionsList.innerHTML = '';
+        transactions.length = 0;
+        transactions.push(...data);
+        transactions.forEach(transaction => {
+            transactionsList.appendChild(createTransactionRow(transaction));
+        });
+    }).catch(error => {
+        console.error('Error:', error);
+        alert(`获取列表失败: ${error}`);
+    });
+}
+
+const createTransaction = () => {
+    fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            type: typeInput.value,
+            accountId: accountIdInput.value,
+            userId: userIdInput.value,
+            amount: amountInput.value,
+            status: statusInput.value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        listAllTransactions();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(`删除失败: ${error}`);
+    });
+}
+
+const deleteTransaction = (id) => {
+    fetch(`/api/transactions/${id}`, {
+        method: 'DELETE'
+    })
+    .then(() => {
+        listAllTransactions();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert(`删除失败: ${error}`);
+    });
+}
+
+const showUpdateModal = (id) => {
+    const transaction = transactions.find(t => t.id === id);
+    document.getElementById('update-id').value = transaction.id;
+    document.getElementById('update-accountId').value = transaction.accountId;
+    document.getElementById('update-userId').value = transaction.userId;
+    document.getElementById('update-amount').value = transaction.amount;
+    document.getElementById('update-type').value = transaction.type;
+    document.getElementById('update-status').value = transaction.status;
+    updateModal.style.display = 'block';
+}
+
+const doUpdate = () => {
+    const id = document.getElementById('update-id').value;
+    const accountId = document.getElementById('update-accountId').value;
+    const userId = document.getElementById('update-userId').value;
+    const amount = document.getElementById('update-amount').value;
+    const type = document.getElementById('update-type').value;
+    const status = document.getElementById('update-status').value;
+    fetch(`/api/transactions/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            accountId: accountId,
+            userId: userId,
+            amount: amount,
+            type: type,
+            status: status
+        })
+    }).then(data => {
+        console.log(data);
+        closeUpdateModal();
+        listAllTransactions();
+    }).catch(error => {
+        console.error('Error:', error);
+        alert(`更新 transaction#${id} 失败: ${error}`);
+    })
+}
+
+const closeUpdateModal = () => {
+    updateModal.style.display = 'none';
+    document.getElementById('update-id').value = '';
+    document.getElementById('update-accountId').value = '';
+    document.getElementById('update-userId').value = '';
+    document.getElementById('update-amount').value = '';
+    document.getElementById('update-type').value = '';
+    document.getElementById('update-status').value = '';
+}
+
+listAllTransactions()
+</script>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .input-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: left;
+        margin: 1rem;
+    }
+
+    .input-label {
+        width: 10rem;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 30%;
+        top: 30%;
+        width: 40%;
+        background-color: lightgrey;
+    }
+
+</style>
