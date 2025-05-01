@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>Transaction Page</title>
+        <meta charset="utf-8">
     </head>
     <body>
         <h2>Create Transaction</h2>
@@ -115,58 +116,66 @@ const createTransactionRow = (transaction) => {
     `;
     return row;
 }
-const listAllTransactions = () => {
-    fetch('/api/transactions')
-    .then(response => response.json())
-    .then(data => {
+
+async function listAllTransactions() {
+    try {
+        resp = await fetch('/api/transactions')
+        data = await resp.json()
+        if(resp.status !== 200) {
+            alert(`查询失败：${data.error}`);
+            return;
+        }
         transactionsList.innerHTML = '';
         transactions.length = 0;
         transactions.push(...data);
         transactions.forEach(transaction => {
             transactionsList.appendChild(createTransactionRow(transaction));
         });
-    }).catch(error => {
-        console.error('Error:', error);
+    } catch (error) {
         alert(`获取列表失败: ${error}`);
-    });
+    }
 }
 
-const createTransaction = () => {
-    fetch('/api/transactions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            type: typeInput.value,
-            accountId: accountIdInput.value,
-            userId: userIdInput.value,
-            amount: amountInput.value,
-            status: statusInput.value
+async function createTransaction() {
+    try {
+        resp = await fetch('/api/transactions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                type: typeInput.value,
+                accountId: accountIdInput.value,
+                userId: userIdInput.value,
+                amount: amountInput.value,
+                status: statusInput.value
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data);
+        data = await resp.json();
+        if (resp.status !== 201) {
+            alert(`创建失败：${data.error}`);
+            return;
+        }
         listAllTransactions();
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert(`删除失败: ${error}`);
-    });
+    } catch (error) {
+        alert(`创建失败: ${error}`);
+    }
 }
 
-const deleteTransaction = (id) => {
-    fetch(`/api/transactions/${id}`, {
-        method: 'DELETE'
-    })
-    .then(() => {
+async function deleteTransaction(id) {
+    try {
+        resp = await fetch(`/api/transactions/${id}`, {
+            method: 'DELETE'
+        })
+        if(resp.status !== 204) {
+            data = await resp.json();
+            alert(`删除失败：${data.error}`);
+            return;
+        }
         listAllTransactions();
-    })
-    .catch(error => {
-        console.error('Error:', error);
+    } catch (error) {
         alert(`删除失败: ${error}`);
-    });
+    }
 }
 
 const showUpdateModal = (id) => {
@@ -180,33 +189,38 @@ const showUpdateModal = (id) => {
     updateModal.style.display = 'block';
 }
 
-const doUpdate = () => {
+async function doUpdate() {
     const id = document.getElementById('update-id').value;
     const accountId = document.getElementById('update-accountId').value;
     const userId = document.getElementById('update-userId').value;
     const amount = document.getElementById('update-amount').value;
     const type = document.getElementById('update-type').value;
     const status = document.getElementById('update-status').value;
-    fetch(`/api/transactions/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            accountId: accountId,
-            userId: userId,
-            amount: amount,
-            type: type,
-            status: status
+    try {
+        resp = await fetch(`/api/transactions/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                accountId: accountId,
+                userId: userId,
+                amount: amount,
+                type: type,
+                status: status
+            })
         })
-    }).then(data => {
-        console.log(data);
+        if(resp.status !== 200) {
+            data = await resp.json();
+            alert(`更新失败：${data.error}`);
+            return;
+        }
         closeUpdateModal();
         listAllTransactions();
-    }).catch(error => {
+    } catch(error) {
         console.error('Error:', error);
         alert(`更新 transaction#${id} 失败: ${error}`);
-    })
+    }
 }
 
 const closeUpdateModal = () => {
