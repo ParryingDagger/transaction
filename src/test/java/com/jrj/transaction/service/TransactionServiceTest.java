@@ -1,6 +1,7 @@
 package com.jrj.transaction.service;
 
 import com.jrj.transaction.entity.Transaction;
+import com.jrj.transaction.entity.TransactionType;
 import com.jrj.transaction.exception.TransactionNotFoundException;
 import com.jrj.transaction.exception.TransactionDuplicatedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class TransactionServiceTest {
         testTransaction.setAccountId("my-account-001");
         testTransaction.setUserId("user-001");
         testTransaction.setAmount(new BigDecimal(141.79));
-        testTransaction.setType("D");
+        testTransaction.setType(TransactionType.fromCode("D"));
         testTransaction.setStatus("PENDING");
     }
 
@@ -96,8 +97,8 @@ public class TransactionServiceTest {
             "my-account-001",
             "user-001",
             new BigDecimal(99.99), 
-            "D",
-            "DONE"
+            "DONE",
+            TransactionType.fromCode("D")
         );
         Transaction updatedTransaction = transactionService.update(createdTransaction.getId(), newTransaction);
         assertNotNull(updatedTransaction);

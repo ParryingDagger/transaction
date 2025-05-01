@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import jakarta.validation.constraints.*;
 
+import com.jrj.transaction.entity.TransactionType;
+
 /**
  * 交易实体类
  * 先兼做DTO，有必要再分离
@@ -33,7 +35,7 @@ public class Transaction {
     private String status;
 
     @NotNull(message = "type is required")
-    private String type;
+    private TransactionType type;
 
     public Transaction() {
         this.id = UUID.randomUUID().toString();
@@ -41,7 +43,7 @@ public class Transaction {
         this.updatedAt = LocalDateTime.now();
     }
     
-    public Transaction(String userId, String accountId, BigDecimal amount, String status, String type) {
+    public Transaction(String userId, String accountId, BigDecimal amount, String status, TransactionType type) {
         this();
         this.userId = userId;
         this.accountId = accountId;
@@ -50,7 +52,7 @@ public class Transaction {
         this.type = type;
     }
     
-    public Transaction(String id, LocalDateTime createdAt, LocalDateTime updatedAt, String userId, String accountId, BigDecimal amount, String status, String type) {
+    public Transaction(String id, LocalDateTime createdAt, LocalDateTime updatedAt, String userId, String accountId, BigDecimal amount, String status, TransactionType type) {
         this.id = id;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -109,11 +111,11 @@ public class Transaction {
         this.status = status;
     }
 
-    public String getType() {
+    public TransactionType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(TransactionType type) {
         this.type = type;
     }
 

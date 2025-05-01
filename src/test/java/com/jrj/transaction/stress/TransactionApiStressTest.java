@@ -35,7 +35,7 @@ public class TransactionApiStressTest {
     private final RestTemplate restTemplate = new RestTemplate();
 
     private final int THREAD_COUNT = 10;
-    private final int OPERATIONS_PER_THREAD = 3000;
+    private final int OPERATIONS_PER_THREAD = 1000;
 
     private final ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
 

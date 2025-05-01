@@ -24,8 +24,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.jrj.transaction.entity.Transaction;
+import com.jrj.transaction.entity.TransactionType;
 import com.jrj.transaction.exception.TransactionNotFoundException;
 import com.jrj.transaction.exception.TransactionDuplicatedException;
+import com.jrj.transaction.exception.TransactionInvalidTypeException;
 import com.jrj.transaction.service.TransactionService;
 import com.jrj.transaction.service.TransactionServiceImpl;
 import com.jrj.transaction.exception.GlobalExceptionHandler;
@@ -47,6 +49,7 @@ public class TransactionControllerTest {
 
     private String testJsonContent;
     private String testPartialUpdateContent;
+    private String testInvalidTypeContent;
     
     @BeforeEach
     public void setUp() {
@@ -54,7 +57,7 @@ public class TransactionControllerTest {
         testTransaction.setAccountId("my-account-001");
         testTransaction.setUserId("user-001");
         testTransaction.setAmount(new BigDecimal(141.79));
-        testTransaction.setType("D");
+        testTransaction.setType(TransactionType.fromCode("D"));
         testTransaction.setStatus("PENDING");
 
         testJsonContent = """
@@ -70,6 +73,16 @@ public class TransactionControllerTest {
         testPartialUpdateContent = """
         {
             "status": "DONE"
+        }
+        """;
+
+        testInvalidTypeContent = """
+        {
+            "type": "invalid_type",
+            "accountId": "my-account-001",
+            "userId": "user-001",
+            "amount": 141.79,
+            "status": "PENDING"
         }
         """;
     }
@@ -115,6 +128,18 @@ public class TransactionControllerTest {
             .andExpect(jsonPath("$.error").value(e.getMessage()));
 
         verify(transactionService, times(1)).create(any(Transaction.class));
+    }
+
+    @Test
+    public void testCreateTransactionWithInvalidType() throws Exception {
+        TransactionInvalidTypeException e = new TransactionInvalidTypeException("invalid_type");
+        
+        mockMvc.perform(post("/api/transactions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(testInvalidTypeContent))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value(e.getMessage()));
+
     }
 
     @Test
@@ -232,7 +257,17 @@ public class TransactionControllerTest {
             .contentType(MediaType.APPLICATION_JSON)
             .content(testPartialUpdateContent))
             .andExpect(status().isBadRequest());
+    }
 
+    @Test
+    public void testUpdateTransactionWithInvalidType() throws Exception {
+        TransactionInvalidTypeException e = new TransactionInvalidTypeException("invalid_type");
+
+        mockMvc.perform(put("/api/transactions/{id}", testTransaction.getId())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(testInvalidTypeContent))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.error").value(e.getMessage()));
     }
 
 }
