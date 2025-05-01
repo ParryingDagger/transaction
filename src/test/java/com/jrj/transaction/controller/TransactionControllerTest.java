@@ -235,30 +235,4 @@ public class TransactionControllerTest {
 
     }
 
-    @Test
-    public void testPartialUpdateTransaction() throws Exception {
-        when(transactionService.update(anyString(), any(Transaction.class))).thenReturn(testTransaction);
-
-        mockMvc.perform(patch("/api/transactions/{id}", testTransaction.getId())
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(testPartialUpdateContent))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(testTransaction.getId()));
-
-        verify(transactionService, times(1)).update(anyString(), any(Transaction.class));
-    }
-
-    @Test
-    public void testPartialUpdateNotFound() throws Exception {
-        TransactionNotFoundException e = new TransactionNotFoundException();
-        when(transactionService.update(anyString(), any(Transaction.class))).thenThrow(e);
-
-        mockMvc.perform(patch("/api/transactions/{id}", "non-existent-id")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(testPartialUpdateContent))
-            .andExpect(status().isNotFound())
-            .andExpect(jsonPath("$.error").value(e.getMessage()));
-
-        verify(transactionService, times(1)).update(anyString(), any(Transaction.class));
-    }
 }

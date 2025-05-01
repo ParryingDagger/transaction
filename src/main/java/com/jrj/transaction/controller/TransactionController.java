@@ -63,15 +63,4 @@ public class TransactionController {
         return ResponseEntity.ok(updated);
     }
 
-    /**
-     * 部分更新，只更新部分属性
-     * @param id
-     * @param transaction
-     * @return
-     */
-    @PatchMapping("/{id}")
-    public ResponseEntity<Transaction> patchUpdateTransaction(@PathVariable String id, @RequestBody Transaction transaction) {
-        Transaction updated = transactionService.update(id, transaction);
-        return ResponseEntity.ok(updated);
-    }
 }
